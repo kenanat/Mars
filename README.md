@@ -23,6 +23,7 @@ Mars(战神),对之前的[WDScanner](https://github.com/TideSec/WDScanner)的全
 
 # Change Log
 
+- [2020-05-11] 更新了几个Bug~
 - [2020-05-10] 一期开源~
 - [2019-05-07] 团队内部搭建测试使用
 - [2019-04-02] POC检测、弱口令检测完成
@@ -30,9 +31,15 @@ Mars(战神),对之前的[WDScanner](https://github.com/TideSec/WDScanner)的全
 - [2019-02-22] 完成部分核心功能
 - [2019-01-15] 规划整体架构
  
+**tips：** 2020年5月11日，代码略有更新，主要修复几个bug，可在docker中的中进行代码更新。
+```
+cd /root/
+rm -rf /root/Tide-Mars
+git clone https://github.com/TideSec/Mars Tide-Mars
+```
 # Abstract
 
-主要功能：客户管理、资产发现、子域名枚举、C段扫描、资产变更监测、端口变更监测、域名解析变更监测、Awvs扫描、POC检测、web指纹探测、端口指纹探测、CDN探测、操作系统指纹探测、泛解析探测、WAF探测、敏感信息检测等等。目前被动扫描准备对接xray+wascan，准备二期开源该功能及其他若干功能。
+主要功能：客户管理、资产发现、子域名枚举、C段扫描、资产变更监测、端口变更监测、域名解析变更监测、Awvs扫描、POC检测、web指纹探测、端口指纹探测、CDN探测、操作系统指纹探测、泛解析探测、WAF探测、敏感信息检测、分布式多节点扫描等等。目前被动扫描准备对接xray+wascan，准备二期开源该功能及其他若干功能。
 
 # Install
 
@@ -105,6 +112,22 @@ cd /root/Tide-Mars/taskpython/ && python asset_task_scan_v1.0.py
 su -l acunetix -c /home/acunetix/.acunetix_trial/start.sh
 ```
 
+## 分布式部署
+
+Mars支持分布式部署，可以多节点同时扫描，空闲节点会优先执行任务，节点任务相互没有干扰。
+
+- 在web控制台添加多个任务；
+- 每个节点接收任务后会把该任务进行标记，这样其他节点不会重复扫描；
+- 如果某节点因为出错而导致没有完成扫描，下次该节点再次启动时会继续执行该任务；
+- 节点的标识是靠`taskpython/asset_task_scan_v1.0.py`文件中的`scan_node`参数，默认是主机名，可自行修改。
+
+**多节点的部署方式：**
+- 1、把`taskpython`目录拷贝到其他服务器上。
+- 2、安装依赖包`pip install -r requirements.txt`
+- 3、修改`asset_task_scan_v1.0.py`文件中的`MONGODB_CONFIG`的mongo数据库地址。
+- 4、运行`python asset_task_scan_v1.0.py`即可。
+
+
 ## 手工安装
 
 非常不建议手工从头安装，如果是想二次开发，可以自行摸索安装。
@@ -125,7 +148,7 @@ su -l acunetix -c /home/acunetix/.acunetix_trial/start.sh
 ## 资产管理
 资产管理是整个平台最基础也算最核心的功能，对资产进行POC检测或者弱口令检测，首先依赖于资产能被发现、指纹能被识别。
 
-比如通过资产探测发现某服务器使用了iis，那么系统会自动调用IIS短文件名检测POC、IIS PUT检测POC进行自动检测，如果发现使用了weblogic会把weblogic的所有反序列化漏洞POC都检测一遍，如果发现系统使用了Mysql，会自动调用mysql弱口令检测程序进行弱口令测试，等等。这些能自动检测的前提就是能发现资产指纹信息，目前我们也搭建了自己的潮汐指纹识别平台，目目前已经开源[http://finger.tidesec.com](http://finger.tidesec.com)。
+比如通过资产探测发现某服务器使用了iis，那么系统会自动调用IIS短文件名检测POC、IIS PUT检测POC进行自动检测，如果发现使用了weblogic会把weblogic的所有反序列化漏洞POC都检测一遍，如果发现系统使用了Mysql，会自动调用mysql弱口令检测程序进行弱口令测试，等等。这些能自动检测的前提就是能发现资产指纹信息，目前我们也搭建了自己的潮汐指纹识别平台，目前已经开源[http://finger.tidesec.com](http://finger.tidesec.com)。
 
 ![pic](images/pic15.png)
 
